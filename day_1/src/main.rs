@@ -27,7 +27,7 @@ fn compute_list_diff(list1: Vec<i32>, list2: Vec<i32>) -> i32{
 }
 
 fn main() {
-    const X: &str = "../input.txt";
+    const X: &str = "input.txt";
     let file_content = io::filesystem::read_file(X);
     let two_lists = parse_file_content(&file_content);
     let diff: i32 = compute_list_diff(two_lists.0, two_lists.1);
