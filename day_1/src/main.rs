@@ -56,8 +56,6 @@ fn main() {
     let mut two_lists = parse_file_content(&file_content);
 
     let diff: i32 = compute_list_diff(&mut two_lists.0, &mut two_lists.1);
-    println!("list diff: {diff}");
     let similarity = compute_list_similarity(two_lists.0, two_lists.1);
-    println!("list similarity: {similarity}")
-
+    println!("List diff: {diff}, list similarity: {similarity}");
 }
