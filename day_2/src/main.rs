@@ -13,64 +13,42 @@ fn create_level_diff_predicate() -> impl Fn(&i32) -> bool {
     }
 }
 
-fn is_level_bad(level1: &i32, level2: &i32, desc: &bool) -> bool{
+fn is_valid(levels: &[i32]) -> bool{
+    if levels.len() < 2 {
+        return true; // A single level or empty is trivially safe
+    }
+    let desc = levels[0] > levels[1];
+
     let predicate = create_level_diff_predicate();
-    let diff = (level2 - level1).abs();
-    let diff_too_high = predicate(&diff);
-    let wrong_order = test_level_diff(desc, level1, level2);
-    return diff_too_high ||  wrong_order;
+    for i in 0..levels.len() - 1 {
+        let diff = (levels[i + 1] - levels[i]).abs();
+        let diff_too_high = predicate(&diff);
+        let wrong_order = test_level_diff(&desc, &levels[i], &levels[i+1]);
+        if diff_too_high || wrong_order {
+            return false;
+        }
+    }
+    true
 }
 
 fn level_str_to_i32(level: &str) -> i32{
     return level.parse::<i32>().unwrap();
 }
 
+
+
 fn is_level_safe(levels: Vec<&str>)->bool{
-    let mut safe: bool = true;
-    let mut removed: i32 = -1;
-    let mut desc = false;
-    for j in 0..levels.len() - 1{
-        if j as i32 == removed {
-            continue;
-        }
+    let level_values: Vec<i32> = levels.iter().map(|x| x.parse::<i32>().unwrap()).collect();
 
-        let level1 = level_str_to_i32(levels[j]);
-        let level2 = level_str_to_i32(levels[j+1]);
-        if j == 0 {
-            desc = level1 > level2;
-        }
-        if is_level_bad(&level1, &level2, &desc){
-            safe = false;
-            if removed != -1 {
-                break;
-            }
-            if (j+2) == levels.len(){
-                safe = true;
-                break;
-            }
-            if j == 0 {
-                removed = 0;
-                safe = true;
-                //desc = level2 > level_str_to_i32(levels[2]);
-                continue;
-            }
-
-            let previous_level = level_str_to_i32(levels[j-1]);
-            if !is_level_bad(&previous_level, &level2, &desc){
-                removed = j as i32;
-                safe = true;
-                continue;
-            }
-            let next_level = level_str_to_i32(levels[j+2]);
-            if !is_level_bad(&level1, &next_level, &desc){
-                removed = (j+1) as i32;
-                safe = true;
-                continue;
-            }
-
+    for i in 0..level_values.len() {
+        let mut modified_levels = level_values.clone();
+        modified_levels.remove(i);
+        if is_valid(&modified_levels) {
+            return true;
         }
     }
-    return safe;
+    return false
+
 
 }
 
