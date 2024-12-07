@@ -31,11 +31,6 @@ fn is_valid(levels: &[i32]) -> bool{
     true
 }
 
-fn level_str_to_i32(level: &str) -> i32{
-    return level.parse::<i32>().unwrap();
-}
-
-
 
 fn is_level_safe(levels: Vec<&str>)->bool{
     let level_values: Vec<i32> = levels.iter().map(|x| x.parse::<i32>().unwrap()).collect();
@@ -48,8 +43,6 @@ fn is_level_safe(levels: Vec<&str>)->bool{
         }
     }
     return false
-
-
 }
 
 
