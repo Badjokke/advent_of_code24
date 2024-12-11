@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, vec};
 
 use regex::Regex;
 fn read_input(path: &str) -> String{
@@ -40,7 +40,7 @@ fn parse_input(content: &str) -> (std::collections::HashMap<u32, Vec<u32>>, Vec<
 
 fn level_dependencies_valid(level: &Vec<u32>, dependencies: & std::collections::HashMap<u32,Vec<u32>>) -> bool{
     println!("{:?}",level);
-    let mut printed_pages: HashSet<u32> = std::collections::HashSet::new();
+    let mut printed_pages: HashSet<u32> = HashSet::new();
     let pages_in_level = iter_to_set(level);
     for i in  0..level.len(){
         let level = level[i];
@@ -59,14 +59,17 @@ fn level_dependencies_valid(level: &Vec<u32>, dependencies: & std::collections::
     return true;
 }
 
-fn filter_valid_levels(levels: Vec<Vec<u32>>, dependencies: std::collections::HashMap<u32, Vec<u32>>) -> Vec<Vec<u32>>{
+fn filter_valid_levels(levels: Vec<Vec<u32>>, dependencies: &std::collections::HashMap<u32, Vec<u32>>) -> (Vec<Vec<u32>>,Vec<Vec<u32>>) {
     let mut valid_levels: Vec<Vec<u32>> = Vec::new();
+    let mut invalid_levels: Vec<Vec<u32>> = Vec::new();
     for level in levels{
         if level_dependencies_valid(&level, &dependencies){
             valid_levels.push(level);
+            continue;
         }
+        invalid_levels.push(level);
     }
-    return valid_levels;
+    return (valid_levels, invalid_levels);
 }
 
 fn sum_valid_level_mid_values(levels: &Vec<Vec<u32>>) -> u32{
@@ -77,12 +80,72 @@ fn sum_valid_level_mid_values(levels: &Vec<Vec<u32>>) -> u32{
     return sum;
 }
 
+
+fn extract_all_dependencies(item: &u32, dependencies: &std::collections::HashMap<u32, Vec<u32>>, visited: &mut HashSet<u32>, unique_items: &HashSet<u32>) -> Vec<u32>{
+    let mut vec: Vec<u32> =Vec::new();
+    match dependencies.get(item){
+        Some(deps) =>{
+            for tmp in deps{
+                if !unique_items.contains(tmp) || visited.contains(tmp){
+                    continue;
+                }
+                let mut foo = extract_all_dependencies(tmp, dependencies, visited, unique_items);
+                vec.append(&mut foo);
+            }
+        }
+        None => {
+            visited.insert(*item);
+        }
+    }
+    vec.push(*item);    
+    visited.insert(*item);
+    return vec;
+}
+
+
+fn reoder_level(level: &Vec<u32>, dependencies: &std::collections::HashMap<u32, Vec<u32>>) -> Vec<u32>{
+    let mut visited: HashSet<u32> = HashSet::new();
+    let mut reordered_level: Vec<u32> = Vec::new();
+    let unique_items = iter_to_set(level);
+    for item in level{
+        if visited.contains(item){
+            continue;
+        }
+        let mut tmp = extract_all_dependencies(item, dependencies, &mut visited, &unique_items);
+        reordered_level.append(&mut tmp);
+        println!("{:?}", reordered_level);
+        println!("{:?}", visited);
+
+
+    }
+    return reordered_level;
+}
+
+
+fn order_incorrect_levels(levels: &Vec<Vec<u32>>, dependencies: &std::collections::HashMap<u32, Vec<u32>>) -> Vec<Vec<u32>>{
+    let mut reordered:Vec<Vec<u32>> = Vec::new();
+    for level in levels{
+        let tmp = reoder_level(level, dependencies);
+        reordered.push(tmp);
+    }
+    return reordered;
+}
+
+
 fn main() {
     let path = "input.txt";
     let content = read_input(path);
     let foo = parse_input(&content);
-    let valid_levels = filter_valid_levels(foo.1, foo.0);
+    let levels = filter_valid_levels(foo.1, &foo.0);
+    let valid_levels = levels.0;
+    let invalid_levels = levels.1;
     println!("valid levels: {:?}", valid_levels);
+    println!("invalid levels: {:?}", invalid_levels);
     let mid_sum_of_valid_levels = sum_valid_level_mid_values(&valid_levels);
     println!("sum: {:?}", mid_sum_of_valid_levels);
+    let reordered_levels = order_incorrect_levels(&invalid_levels, &foo.0);
+    println!("reodered: {:?}", reordered_levels);
+    let mid_sum_of_invalid_levels = sum_valid_level_mid_values(&reordered_levels);
+    println!("sum reodered: {:?}", mid_sum_of_invalid_levels);
+
 }
