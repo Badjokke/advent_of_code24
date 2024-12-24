@@ -7,7 +7,7 @@ use player::guard::Guard;
 
 fn main() {
     let result = filesystem::read_lines_as_char("input.txt");
-    let map = Map::new(result, Guard::new());
-    map.simulate();
-    println!("{:?}", map)
+    let mut map = Map::new(result, Guard::new());
+    let visited = map.simulate();
+    println!("Visited {visited} positions");
 }

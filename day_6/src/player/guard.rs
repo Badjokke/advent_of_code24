@@ -21,4 +21,13 @@ impl Guard{
             Direction::Left => Direction::Up
         }    
     }
+    pub fn step(&self, i: i32, j: i32) -> (i32, i32){
+        match self.direction{
+            Direction::Up => (i - 1, j),
+            Direction::Down => (i + 1, j),
+            Direction::Left => (i, j - 1),
+            Direction::Right => (i, j + 1)
+        }
+    }
+
 }
